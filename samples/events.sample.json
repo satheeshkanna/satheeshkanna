@@ -1,0 +1,85 @@
+{
+  "sample": true,
+  "events": [
+    {
+      "event_id": "sample-event-0",
+      "datetime": "2026-10-06T00:00:00.000Z",
+      "api_name": "complaint",
+      "uri_path": "/complaint/create",
+      "status_code": "200 OK",
+      "transaction_id": "sample-tx-0",
+      "time_to_serve_request": 100,
+      "request_body": "{\"icComplaintReferenceNumber\": \"SAMPLE-001\", \"complaintProcessingType\": \"Create\", \"complaintProcessingStatus\": \"Success\"}"
+    },
+    {
+      "event_id": "sample-event-1",
+      "datetime": "2026-10-06T01:00:00.000Z",
+      "api_name": "complaint",
+      "uri_path": "/complaint/update",
+      "status_code": "200 OK",
+      "transaction_id": "sample-tx-1",
+      "time_to_serve_request": 101,
+      "request_body": "{\"icComplaintReferenceNumber\": \"SAMPLE-001\", \"complaintProcessingType\": \"Update\", \"complaintProcessingStatus\": \"Success\"}"
+    },
+    {
+      "event_id": "sample-event-2",
+      "datetime": "2026-10-06T02:00:00.000Z",
+      "api_name": "complaint",
+      "uri_path": "/complaint/feedback",
+      "status_code": "413 Error",
+      "transaction_id": "sample-tx-2",
+      "time_to_serve_request": 102,
+      "request_body": "{\"icComplaintReferenceNumber\": \"SAMPLE-001\", \"complaintProcessingType\": \"Feedback\", \"complaintProcessingStatus\": \"Success\"}"
+    },
+    {
+      "event_id": "sample-event-3",
+      "datetime": "2026-10-06T03:00:00.000Z",
+      "api_name": "complaint",
+      "uri_path": "/complaint/resolution",
+      "status_code": "200 OK",
+      "transaction_id": "sample-tx-3",
+      "time_to_serve_request": 103,
+      "request_body": "{\"icComplaintReferenceNumber\": \"SAMPLE-001\", \"complaintProcessingType\": \"Resolution\", \"complaintProcessingStatus\": \"Error\", \"error\": {\"errorCode\": \"404\", \"errorMessage\": \"Synthetic example only\"}}"
+    },
+    {
+      "event_id": "sample-event-4",
+      "datetime": "2026-10-06T04:00:00.000Z",
+      "api_name": "complaint",
+      "uri_path": "/complaint/update",
+      "status_code": "200 OK",
+      "transaction_id": "sample-tx-4",
+      "time_to_serve_request": 104,
+      "request_body": "{\"icComplaintReferenceNumber\": \"SAMPLE-004\", \"complaintProcessingType\": \"Update\", \"complaintProcessingStatus\": \"Error\", \"error\": {\"errorCode\": \"404\", \"errorMessage\": \"Synthetic example only\"}}"
+    },
+    {
+      "event_id": "sample-event-5",
+      "datetime": "2026-10-06T05:00:00.000Z",
+      "api_name": "complaint",
+      "uri_path": "/complaint/feedback",
+      "status_code": "504 Error",
+      "transaction_id": "sample-tx-5",
+      "time_to_serve_request": 105,
+      "request_body": "{\"icComplaintReferenceNumber\": \"SAMPLE-005\", \"complaintProcessingType\": \"Feedback\", \"complaintProcessingStatus\": \"Success\"}"
+    },
+    {
+      "event_id": "sample-event-6",
+      "datetime": "2026-10-06T06:00:00.000Z",
+      "api_name": "complaint",
+      "uri_path": "/complaint/unknown",
+      "status_code": "200 OK",
+      "transaction_id": "sample-tx-6",
+      "time_to_serve_request": 106,
+      "request_body": "{invalid"
+    },
+    {
+      "event_id": "sample-event-7",
+      "datetime": "2026-10-06T07:00:00.000Z",
+      "api_name": "complaint",
+      "uri_path": "/complaint/create",
+      "status_code": "201 OK",
+      "transaction_id": "sample-tx-7",
+      "time_to_serve_request": 107,
+      "request_body": "{\"icComplaintReferenceNumber\": \"SAMPLE-007\", \"complaintProcessingType\": \"Create\", \"complaintProcessingStatus\": \"Error\", \"error\": {\"errorCode\": \"422\", \"errorMessage\": \"Synthetic example only\"}}"
+    }
+  ]
+}

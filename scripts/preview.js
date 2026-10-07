@@ -1,0 +1,13 @@
+import {readFile,mkdir,writeFile} from 'node:fs/promises';
+import path from 'node:path';
+import {configuration,root} from '../services/config.js';
+import {aggregate} from '../services/aggregator.js';
+import {period} from '../services/period.js';
+import {render} from '../services/renderer.js';
+import {excel} from '../services/excel.js';
+const config=configuration(),data=JSON.parse(await readFile(path.join(root,'samples/events.sample.json'),'utf8'));
+const report=aggregate(data.events,config),window=period({start:'2026-10-06',end:'2026-10-07'});
+await mkdir(path.join(root,'output'),{recursive:true});
+for(const template of ['template1','template4'])await writeFile(path.join(root,'output',`${template}.preview.html`),await render(report,{template,window,environment:'SAMPLE DATA — no live API',sample:true,attachmentName:'Complaint_Journey_Report_SAMPLE.xlsx (local preview)'}));
+await excel(report,window,path.join(root,'output','Complaint_Journey_Report_SAMPLE.xlsx'));
+console.log(`SAMPLE DATA: ${report.total} requests, ${report.success} gateway successes, ${report.failed} gateway failures, ${report.businessErrorCount} business errors. Both HTML previews and XLSX generated in output/. No email sent.`);

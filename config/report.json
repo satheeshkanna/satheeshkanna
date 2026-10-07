@@ -1,0 +1,57 @@
+{
+  "timezone": "Asia/Riyadh",
+  "intervalDays": 1,
+  "limit": 1000,
+  "filters": {
+    "path": "contains:complaint",
+    "app_name": ""
+  },
+  "operations": [
+    {
+      "name": "Complaint Creation",
+      "match": {
+        "uri_path": [
+          "/create",
+          "/creation"
+        ],
+        "complaintProcessingType": [
+          "Create",
+          "Creation"
+        ]
+      }
+    },
+    {
+      "name": "Complaint Update",
+      "match": {
+        "uri_path": [
+          "/update"
+        ],
+        "complaintProcessingType": [
+          "Update"
+        ]
+      }
+    },
+    {
+      "name": "Complaint Feedback",
+      "match": {
+        "uri_path": [
+          "/feedback"
+        ],
+        "complaintProcessingType": [
+          "Feedback"
+        ]
+      }
+    },
+    {
+      "name": "Complaint Resolution",
+      "match": {
+        "uri_path": [
+          "/resolution"
+        ],
+        "complaintProcessingType": [
+          "Resolution"
+        ]
+      }
+    }
+  ]
+}
