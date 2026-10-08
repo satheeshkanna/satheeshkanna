@@ -44,3 +44,13 @@ test('independent business data does not inflate gateway totals or presume share
  const r=aggregateSources(gateway,business,config);assert.equal(r.total,1);assert.equal(r.success,1);assert.equal(r.failed,0);assert.equal(r.businessErrorCount,1);assert.equal(r.businessErrors.length,1);assert.equal(r.independentBusinessSource,true);assert.equal(r.affectedEvents,'Not established across independent sources');
  const html=await render(r,{window});assert.match(html,/Attention Required/);assert.match(html,/independent source/);
 });
+
+test('transport diagnostics expose endpoint and nested safe codes without secrets',async()=>{
+ const secret='DO_NOT_LOG_PASSWORD';
+ const cause=new AggregateError([Object.assign(new Error(secret),{code:'ENOTFOUND'}),Object.assign(new Error(secret),{code:'ECONNREFUSED'})],secret);
+ await assert.rejects(request(`https://user:${secret}@example.invalid/events?token=${secret}`,{endpointLabel:'BUSINESS_EVENTS_URL',retries:0,fetchImpl:async()=>{throw new TypeError(secret,{cause});}}),error=>{assert.match(error.message,/BUSINESS_EVENTS_URL/);assert.match(error.message,/ENOTFOUND/);assert.match(error.message,/ECONNREFUSED/);assert.doesNotMatch(error.message,/DO_NOT_LOG_PASSWORD|example.invalid/);assert.equal(error.attempts,1);return true;});
+});
+test('TLS and invalid response diagnostics identify authentication endpoint',async()=>{
+ await assert.rejects(request('https://example.invalid',{endpointLabel:'AUTH_URL',retries:0,fetchImpl:async()=>{throw new TypeError('fetch failed',{cause:Object.assign(new Error('private certificate details'),{code:'UNABLE_TO_VERIFY_LEAF_SIGNATURE'})});}}),/AUTH_URL:.*UNABLE_TO_VERIFY_LEAF_SIGNATURE/);
+ await assert.rejects(request('https://example.invalid',{endpointLabel:'AUTH_URL',fetchImpl:async()=>new Response('<html>private response</html>')}),/AUTH_URL:.*invalid JSON/);
+});

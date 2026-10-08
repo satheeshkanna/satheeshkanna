@@ -99,3 +99,9 @@ Reuse createAuth, fetchEvents, aggregate, render, workbook and send from service
 ## Verification scope
 
 `npm test` covers mocked authentication/cache/expiry/401, pagination over 1000, deduplication, incomplete data, date boundaries, aggregation/overlap, missing payloads, two templates, Excel readback, mail contract, uncertain/sent duplicate suppression, timeout/retry/failure behavior. Tests need no corporate network. Actual Windows runtime, Outlook appearance, live event permissions, API field availability, attachment schema and inbox delivery require validation in the user's environment.
+
+### Detailed request diagnostics
+
+Transport failures identify AUTH_URL, EVENTS_URL, BUSINESS_EVENTS_URL or NOTIFICATION_URL in both terminal output and logs/report.jsonl. Known underlying error codes are preserved safely, including nested connection errors; credentials, full URLs, raw exception messages and response bodies are omitted. `ENOTFOUND`/`EAI_AGAIN` indicates DNS resolution; `ECONNREFUSED` indicates a refused connection; `ETIMEDOUT`/`UND_ERR_CONNECT_TIMEOUT` indicates connection timeout; certificate codes such as `UNABLE_TO_VERIFY_LEAF_SIGNATURE` indicate TLS trust problems. HTTP status failures show their status code, and non-JSON responses are identified explicitly. These are diagnostic categories, not proof of the exact network root cause. For TLS problems configure an approved corporate CA chain using NODE_EXTRA_CA_CERTS before launching Node; never disable TLS verification.
+
+PowerShell capture: `npm run report -- --dry-run 2>&1 | Tee-Object -FilePath .\report-error.txt`. PowerShell's NativeCommandError wrapper means Node wrote to stderr; inspect the preceding service diagnostic. Share that line with secrets/customer data removed. When updating from a new ZIP, preserve your local .env and .state outside the extracted folder, restore them afterward, then run npm ci. Do not overwrite existing delivery state.

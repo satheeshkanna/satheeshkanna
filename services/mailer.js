@@ -8,7 +8,7 @@ export function payload(config,report,window,html){
 }
 export async function send(config,auth,message){
  // Never retry non-idempotent notification requests automatically.
- const response=await auth.authorized(endpoint(config.env,'NOTIFICATION_URL'),{method:'POST',body:message,retries:0});
+ const response=await auth.authorized(endpoint(config.env,'NOTIFICATION_URL'),{method:'POST',body:message,retries:0,endpointLabel:'NOTIFICATION_URL'});
  if(response.success===false||response.error||response.errors||['failed','failure','error'].includes(String(response.status||'').toLowerCase()))throw new Error('Notification API reported rejection');
  return response;
 }

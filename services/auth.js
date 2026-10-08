@@ -8,7 +8,7 @@ export function createAuth(config,{requestImpl=request,now=Date.now}={}) {
     pending=(async()=>{
       const env=config.env;
       const body=Object.fromEntries(['username','password','realm','client_id','client_secret','grant_type'].map(k=>[k,required(env,`AUTH_${k.toUpperCase()}`)]));
-      const result=await requestImpl(endpoint(env,'AUTH_URL'),{method:'POST',body,timeout:config.timeout,retries:config.retries});
+      const result=await requestImpl(endpoint(env,'AUTH_URL'),{method:'POST',body,endpointLabel:'AUTH_URL',timeout:config.timeout,retries:config.retries});
       if(typeof result.access_token!=='string'||!result.access_token||!Number.isFinite(Number(result.expires_in))||Number(result.expires_in)<=0) throw new Error('Invalid token response');
       cached=result.access_token;expiry=now()+Number(result.expires_in)*1000-Math.min(60000,Number(result.expires_in)*100);
       return cached;

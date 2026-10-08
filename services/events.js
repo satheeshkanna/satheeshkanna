@@ -5,7 +5,7 @@ export async function fetchEvents(config,window,auth,{requestBody,endpointKey='E
   for(let page=0;page<100000;page++) {
     const url=new URL(endpoint(config.env,endpointKey));
     for(const [k,v] of Object.entries({start:window.start,end:window.end,fields,...filters,request_body:requestBody,limit,offset})) if(v!==undefined&&v!=='') url.searchParams.set(k,String(v));
-    const data=await auth.authorized(url.toString());
+    const data=await auth.authorized(url.toString(),{endpointLabel:endpointKey});
     if(!Array.isArray(data.events)||!Number.isInteger(data.total)||data.total<0) throw new Error('Invalid events pagination response');
     if(total!==undefined&&total!==data.total) throw new Error('Events total changed during pagination; aborting incomplete report');
     total=data.total;
