@@ -60,7 +60,7 @@ A period/environment identity is protected by an exclusive `.state/*.lock` file 
 
 Sheets: Summary, Gateway Failures, Business Errors, Technical Errors; frozen headers, autofilters, widths and formatting are applied. Latency retains API units because the reference does not establish units. Raw bodies, authentication headers, customer phone numbers and free-text messages are never exported. Complaint references are hashed to stable pseudonyms (not cryptographically anonymized); restrict access to outputs accordingly. Only generic approved code reasons (404, 422, fallback) appear in emails/XLSX. Preserve original diagnostic details in authorized source systems, not this report. Technical classifications derive from observed statuses, with no invented failure counts.
 
-Complaint aggregation is exposed from services/aggregator.js when references exist, grouping only explicit identifiers. Event success rates and health do not imply completed workflows. Reports and structured local logs are under output/ and logs/. .state and real outputs/logs must never be included in a distributed ZIP. Apply local file permissions, retention policies and disk monitoring appropriate to your deployment. LOG_LEVEL=silent disables file logging (status still prints to console).
+Complaint aggregation is exposed from services/aggregator.js when references exist, grouping only explicit identifiers. Event success rates and health do not imply completed workflows. Reports and structured local logs are under output/ and logs/. .state and real outputs/logs must never be included in a distributed ZIP. Apply local file permissions, retention policies and disk monitoring appropriate to your deployment. LOG_LEVEL=silent disables console and file progress logging; fatal CLI errors still print to stderr.
 
 ## Templates
 
@@ -105,3 +105,26 @@ Reuse createAuth, fetchEvents, aggregate, render, workbook and send from service
 Transport failures identify AUTH_URL, EVENTS_URL, BUSINESS_EVENTS_URL or NOTIFICATION_URL in both terminal output and logs/report.jsonl. Known underlying error codes are preserved safely, including nested connection errors; credentials, full URLs, raw exception messages and response bodies are omitted. `ENOTFOUND`/`EAI_AGAIN` indicates DNS resolution; `ECONNREFUSED` indicates a refused connection; `ETIMEDOUT`/`UND_ERR_CONNECT_TIMEOUT` indicates connection timeout; certificate codes such as `UNABLE_TO_VERIFY_LEAF_SIGNATURE` indicate TLS trust problems. HTTP status failures show their status code, and non-JSON responses are identified explicitly. These are diagnostic categories, not proof of the exact network root cause. For TLS problems configure an approved corporate CA chain using NODE_EXTRA_CA_CERTS before launching Node; never disable TLS verification.
 
 PowerShell capture: `npm run report -- --dry-run 2>&1 | Tee-Object -FilePath .\report-error.txt`. PowerShell's NativeCommandError wrapper means Node wrote to stderr; inspect the preceding service diagnostic. Share that line with secrets/customer data removed. When updating from a new ZIP, preserve your local .env and .state outside the extracted folder, restore them afterward, then run npm ci. Do not overwrite existing delivery state.
+
+## Step-by-step logging controls
+
+Configure these switches in `.env` and start a new run:
+
+```env
+LOG_ENABLED=true
+LOG_CONSOLE_ENABLED=true
+LOG_FILE_ENABLED=true
+LOG_LEVEL=info
+```
+
+LOG_ENABLED=false disables all progress logging. LOG_CONSOLE_ENABLED controls PowerShell/terminal progress independently; LOG_FILE_ENABLED controls logs/report.jsonl independently. LOG_LEVEL=info shows authentication, reporting period, source/page retrieval and counts, aggregation, Excel generation, HTML generation, duplicate-send checks and sending. debug additionally shows HTTP attempts, status codes, timeout settings and retries. warn/error restrict output by severity; silent disables both sinks. Fatal CLI errors still print to stderr even with progress disabled. Startup configuration errors may occur before the logger is initialized and therefore appear only in the terminal. File-write failures warn in the terminal when enabled and do not prevent reporting.
+
+Each run has a runId, timestamps and severity. report_failed includes lastStep and safe endpoint/transport diagnostics. Credentials, tokens, headers, recipients and raw event/API payloads are not logged.
+
+PowerShell live file view (a second terminal):
+
+```powershell
+Get-Content .\logs\report.jsonl -Tail 30 -Wait
+```
+
+Use Ctrl+C to stop tailing. You can also use the report terminal itself for readable progress. Existing .env files do not acquire new fields automatically; add the switches yourself. The default is both sinks enabled at info. These instructions replace the earlier LOG_LEVEL=silent description: silent now disables both progress sinks.

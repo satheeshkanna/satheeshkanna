@@ -1,10 +1,12 @@
 import {endpoint} from './config.js';
 export const fields='event_id,datetime,api_name,api_version,app_name,status_code,transaction_id,global_transaction_id,uri_path,time_to_serve_request,request_body,response_body';
-export async function fetchEvents(config,window,auth,{requestBody,endpointKey='EVENTS_URL',filters=config.filters,limit=config.limit}={}) {
+export async function fetchEvents(config,window,auth,{requestBody,endpointKey='EVENTS_URL',filters=config.filters,limit=config.limit,progress=async()=>{}}={}) {
+  await progress('events_fetch_started',{endpoint:endpointKey,pageLimit:limit});
   const result=[],seen=new Set();let offset=0,total,duplicates=0;
   for(let page=0;page<100000;page++) {
     const url=new URL(endpoint(config.env,endpointKey));
     for(const [k,v] of Object.entries({start:window.start,end:window.end,fields,...filters,request_body:requestBody,limit,offset})) if(v!==undefined&&v!=='') url.searchParams.set(k,String(v));
+    await progress('events_page_started',{endpoint:endpointKey,page:page+1,offset,limit});
     const data=await auth.authorized(url.toString(),{endpointLabel:endpointKey});
     if(!Array.isArray(data.events)||!Number.isInteger(data.total)||data.total<0) throw new Error('Invalid events pagination response');
     if(total!==undefined&&total!==data.total) throw new Error('Events total changed during pagination; aborting incomplete report');
@@ -21,7 +23,8 @@ export async function fetchEvents(config,window,auth,{requestBody,endpointKey='E
     }
     offset+=data.events.length;
     if(offset>total) throw new Error('Retrieved rows exceed API total');
-    if(offset===total) return {events:result,metadata:{total,rawRows:offset,duplicates,uniqueEvents:result.length}};
+    await progress('events_page_completed',{endpoint:endpointKey,page:page+1,rows:data.events.length,retrieved:offset,total,duplicates,uniqueEvents:result.length});
+    if(offset===total) {await progress('events_fetch_completed',{endpoint:endpointKey,total,duplicates,uniqueEvents:result.length});return {events:result,metadata:{total,rawRows:offset,duplicates,uniqueEvents:result.length}};}
     if(data.events.length===0) throw new Error('Incomplete pagination: empty page before total');
   }
   throw new Error('Pagination safety limit exceeded');

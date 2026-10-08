@@ -54,3 +54,22 @@ test('TLS and invalid response diagnostics identify authentication endpoint',asy
  await assert.rejects(request('https://example.invalid',{endpointLabel:'AUTH_URL',retries:0,fetchImpl:async()=>{throw new TypeError('fetch failed',{cause:Object.assign(new Error('private certificate details'),{code:'UNABLE_TO_VERIFY_LEAF_SIGNATURE'})});}}),/AUTH_URL:.*UNABLE_TO_VERIFY_LEAF_SIGNATURE/);
  await assert.rejects(request('https://example.invalid',{endpointLabel:'AUTH_URL',fetchImpl:async()=>new Response('<html>private response</html>')}),/AUTH_URL:.*invalid JSON/);
 });
+
+test('logging switches independently control console/file and severity',async()=>{
+ const {createLogger}=await import('../services/logger.js');
+ const dir=await mkdtemp(path.join(os.tmpdir(),'report-logs-'));let lines=[];const terminal={log:x=>lines.push(x),error:x=>lines.push(x)};
+ try{
+  await createLogger({LOG_FILE_ENABLED:'false'},{directory:dir,consoleImpl:terminal,runId:'console'})('events_page_started',{offset:0});
+  assert.equal(lines.length,1);await assert.rejects(readFile(path.join(dir,'report.jsonl')),e=>e.code==='ENOENT');
+  lines=[];await createLogger({LOG_CONSOLE_ENABLED:'false'},{directory:dir,consoleImpl:terminal,runId:'file'})('events_page_completed',{total:10});assert.equal(lines.length,0);
+  let stored=(await readFile(path.join(dir,'report.jsonl'),'utf8')).trim().split('\n');assert.equal(stored.length,1);assert.equal(JSON.parse(stored[0]).runId,'file');
+  await createLogger({LOG_ENABLED:'false'},{directory:dir,consoleImpl:terminal})('disabled');
+  await createLogger({LOG_LEVEL:'silent'},{directory:dir,consoleImpl:terminal})('silent');
+  const errorOnly=createLogger({LOG_LEVEL:'error'},{directory:dir,consoleImpl:terminal});await errorOnly('filtered',{},'info');await errorOnly('report_failed',{lastStep:'authentication_started'},'error');
+  stored=(await readFile(path.join(dir,'report.jsonl'),'utf8')).trim().split('\n');assert.equal(stored.length,2);assert.equal(lines.length,1);assert.equal(JSON.parse(stored[1]).lastStep,'authentication_started');
+ }finally{await rm(dir,{recursive:true,force:true});}
+});
+test('authentication and HTTP retries emit safe ordered progress',async()=>{
+ const progress=[];const auth=createAuth(config,{progress:async(event,details)=>progress.push({event,...details}),requestImpl:async()=>({access_token:'SECRET_TOKEN',expires_in:100})});await auth.token();assert.deepEqual(progress.map(x=>x.event),['authentication_started','authentication_completed']);assert.doesNotMatch(JSON.stringify(progress),/SECRET_TOKEN/);
+ let calls=0;await request('https://example.invalid',{endpointLabel:'EVENTS_URL',retries:1,progress:async(event,details)=>progress.push({event,...details}),fetchImpl:async()=>++calls===1?new Response('',{status:503}):Response.json({ok:true})});assert.equal(progress.filter(x=>x.event==='http_request_started').length,2);assert.equal(progress.find(x=>x.event==='http_retry_scheduled').nextAttempt,2);
+});

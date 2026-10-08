@@ -6,12 +6,14 @@ function codes(error){
  walk(error);return [...found];
 }
 const pause=ms=>new Promise(r=>setTimeout(r,ms));
-export async function request(url,{method='GET',body,token,timeout=30000,retries=2,fetchImpl=fetch,endpointLabel='API'}={}) {
+export async function request(url,{method='GET',body,token,timeout=30000,retries=2,fetchImpl=fetch,endpointLabel='API',progress=async()=>{}}={}) {
   const label=['AUTH_URL','EVENTS_URL','BUSINESS_EVENTS_URL','NOTIFICATION_URL'].includes(endpointLabel)?endpointLabel:'API';
   for(let attempt=0;;attempt++) {
     const controller=new AbortController(); const timer=setTimeout(()=>controller.abort(),timeout);
     try {
+      await progress('http_request_started',{endpoint:label,method,attempt:attempt+1,timeoutMs:timeout},'debug');
       const response=await fetchImpl(url,{method,signal:controller.signal,headers:{Accept:'application/json',...(body!==undefined?{'Content-Type':'application/json'}:{}),...(token?{Authorization:`Bearer ${token}`}:{})},...(body!==undefined?{body:JSON.stringify(body)}:{} )});
+      await progress('http_response_received',{endpoint:label,status:response.status,attempt:attempt+1},'debug');
       if(!response.ok) throw new HttpError(response.status);
       const text=await response.text();
       if(!text) return {};
@@ -26,6 +28,7 @@ export async function request(url,{method='GET',body,token,timeout=30000,retries
         failure.endpoint=label;failure.diagnosticCodes=underlying;failure.attempts=attempt+1;
         throw failure;
       }
+      await progress('http_retry_scheduled',{endpoint:label,attempt:attempt+1,nextAttempt:attempt+2,reason:error instanceof HttpError?`HTTP ${error.status}`:error.name==='AbortError'?'timeout':'transport failure',diagnosticCodes:codes(error)},'warn');
       await pause(Math.min(250*2**attempt,4000));
     } finally {clearTimeout(timer);}
   }
