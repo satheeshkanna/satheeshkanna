@@ -18,6 +18,8 @@ export function configuration(env=process.env) {
     limit:integer(env.PAGE_LIMIT,report.limit), template:env.REPORT_TEMPLATE || 'template1',
     filters:{path:env.EVENT_PATH ?? report.filters.path,app_name:env.EVENT_APP_NAME ?? report.filters.app_name},
     businessQuery:env.BUSINESS_ERROR_QUERY || '',
+    businessFilters:{path:env.BUSINESS_EVENT_PATH ?? '',app_name:env.BUSINESS_EVENT_APP_NAME ?? ''},
+    businessLimit:integer(env.BUSINESS_PAGE_LIMIT,50),
     timeout:integer(env.REQUEST_TIMEOUT_MS,30000), retries:integer(env.REQUEST_RETRIES,2,0,5),
     attachmentEnabled:env.ATTACHMENT_ENABLED==='true', env };
 }

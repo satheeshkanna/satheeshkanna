@@ -22,3 +22,14 @@ export function aggregate(events,config){
  const complaints=group(rows.filter(r=>r.complaintReference),['complaintReference']).map(c=>{const rs=rows.filter(r=>r.complaintReference===c.complaintReference),failed=rs.filter(r=>!r.gatewaySuccess||r.businessError).length;return {...c,successfulEvents:rs.length-failed,failedEvents:failed,eventSuccessRate:((rs.length-failed)/rs.length*100).toFixed(2),health:failed?'Attention Required':'No observed failures; workflow completion unknown'};});
  return {total,success,failed:total-success,successRate:total?(success/total*100).toFixed(2):'N/A',failureRate:total?((total-success)/total*100).toFixed(2):'N/A',businessErrorCount:businessErrors.length,affectedEvents:rows.filter(r=>!r.gatewaySuccess||r.businessError).length,unknownBusinessStatus:rows.filter(r=>!r.payloadKnown).length,rows,operations,gatewayFailures,businessErrors,technicalErrors:gatewayFailures,businessGroups:group(businessErrors,['operation','errorCode','errorMessage']),technicalGroups:group(gatewayFailures,['status','technicalReason']),complaints};
 }
+
+// Independent API sources do not imply shared event IDs or transaction populations.
+export function aggregateSources(gatewayEvents,businessEvents,config){
+ const report=aggregate(gatewayEvents,config);
+ if(businessEvents===undefined)return report;
+ const business=aggregate(businessEvents,config);
+ return {...report,businessErrors:business.businessErrors,businessGroups:business.businessGroups,
+  businessErrorCount:business.businessErrorCount,businessSourceTotal:business.total,
+  unknownBusinessStatus:business.unknownBusinessStatus,independentBusinessSource:true,
+  affectedEvents:'Not established across independent sources'};
+}
