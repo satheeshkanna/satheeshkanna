@@ -42,13 +42,14 @@ npm run report -- --dry-run
 npm run report
 npm run report -- --start 2026-10-06 --end 2026-10-07
 npm run report -- --start 2026-10-06 --end 2026-10-07 --force
+npm run report -- --start-time "2026-10-10T09:00:00+03:00" --end-time "2026-10-10T12:30:00+03:00" --dry-run
 npm run test:mail
 npm run test:mail -- --confirm-send
 ```
 
 `--dry-run` retrieves real data and writes HTML/XLSX without sending. `report` sends to configured recipients; `test:mail` sends only with explicit --confirm-send and uses a clearly labeled connectivity-test subject. This test does not suppress or affect daily reports. Preview always generates both templates; live report uses REPORT_TEMPLATE=template1 or template4. No source change is required to switch.
 
-Dates are Saudi local midnight boundaries: **start inclusive, end exclusive**. The example covers 6 October, UTC `[2026-10-05T21:00:00Z, 2026-10-06T21:00:00Z)`. Default is the previous Saudi calendar day, or REPORT_INTERVAL_DAYS preceding days. Only Asia/Riyadh is supported and other timezone values are rejected rather than silently miscalculated. Gateway end semantics are unconfirmed; records at the exact exclusive end are removed client-side. UTC timestamp strings are used for API requests.
+Date options are Saudi local midnight boundaries: **start inclusive, end exclusive**. The example covers 6 October, UTC `[2026-10-05T21:00:00Z, 2026-10-06T21:00:00Z)`. Default is the previous Saudi calendar day, or REPORT_INTERVAL_DAYS preceding days. Only Asia/Riyadh is supported and other timezone values are rejected rather than silently miscalculated. Gateway end semantics are unconfirmed; records at the exact exclusive end are removed client-side. UTC timestamp strings are used for API requests.
 
 Reports abort if authentication, source retrieval, pagination validation, generation or required configuration fails. No partial/zero-failure substitute email is sent. HTTP requests have timeouts and bounded exponential retries for transient failures; notification sending has no automatic retries because the API provides no idempotency contract. A 401 triggers one token refresh and request retry.
 
@@ -128,3 +129,5 @@ Get-Content .\logs\report.jsonl -Tail 30 -Wait
 ```
 
 Use Ctrl+C to stop tailing. You can also use the report terminal itself for readable progress. Existing .env files do not acquire new fields automatically; add the switches yourself. The default is both sinks enabled at info. These instructions replace the earlier LOG_LEVEL=silent description: silent now disables both progress sinks.
+
+For exact time ranges use `--start-time` and `--end-time`, for example `npm run report -- --start-time "2026-10-10T09:00:00+03:00" --end-time "2026-10-10T12:30:00+03:00" --dry-run`. The end is exclusive. The service converts these timestamps to UTC (`06:00Z` through `09:30Z`). Always include `+03:00` or `Z`; timestamps without a timezone are rejected. Do not combine time options with date options.
