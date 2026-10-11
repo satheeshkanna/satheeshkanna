@@ -1,7 +1,29 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Complaint Journey Report</title></head><body><table role="presentation" width="100%"><tr><td align="center"><table role="presentation" class="shell" width="640"><tr><td class="header" style="background:#0079C8">
-<div>Bupa — text placeholder, not an approved logo</div><h1>Customer Complaint Journey</h1><p>{{window.label}}</p><p>{{environment}}</p>{{#if sample}}<strong>SAMPLE DATA — NOT A PRODUCTION REPORT</strong>{{/if}}</td></tr><tr><td class="section">
-<table role="presentation" width="100%"><tr><td class="metric">Total requests<br><strong>{{total}}</strong></td><td class="metric">Gateway successes<br><strong>{{success}}</strong></td></tr><tr><td class="metric error">Gateway failures<br><strong>{{failed}}</strong></td><td class="metric warning">Business errors<br><strong>{{businessErrorCount}}</strong></td></tr></table><p class="success">Gateway success: <strong>{{successRate}}%</strong> · Failure: {{failureRate}}%</p><p>{{health}} · Distinct affected events: {{affectedEvents}}</p>
-<h2>API Performance Summary</h2><table class="data" width="100%"><thead><tr><th>API operation</th><th>Total</th><th>Success</th><th>Failed</th></tr></thead><tbody>{{#each operations}}<tr><td>{{name}}</td><td>{{total}}</td><td>{{success}}</td><td>{{failed}}</td></tr>{{/each}}</tbody></table>
-<h2>Business Processing Errors</h2><table class="data" width="100%"><thead><tr><th>Operation</th><th>Code</th><th>Reason</th><th>Count</th></tr></thead><tbody>{{#each businessGroups}}<tr><td>{{operation}}</td><td>{{errorCode}}</td><td>{{errorMessage}}</td><td>{{count}}</td></tr>{{else}}<tr><td colspan="4">No observed business errors. Missing payloads remain unverified.</td></tr>{{/each}}</tbody></table>
-<h2>Technical Failures</h2><table class="data" width="100%"><thead><tr><th>Status</th><th>Classification</th><th>Count</th></tr></thead><tbody>{{#each technicalGroups}}<tr><td>{{status}}</td><td>{{technicalReason}}</td><td>{{count}}</td></tr>{{else}}<tr><td colspan="3">No gateway failures observed.</td></tr>{{/each}}</tbody></table>
-<h2>Key Observations</h2>{{#each observations}}<p>{{this}}</p>{{/each}}<p>Attachment: {{attachmentName}}</p></td></tr><tr><td class="footer">Complaint Support Monitoring · Automated report · Internal Use Only<br>Gateway statistics and business validation are separate dimensions.</td></tr></table></td></tr></table></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Complaint Journey Dashboard</title></head>
+<body>
+<table role="presentation" class="canvas" width="100%"><tr><td align="center" class="outer">
+<table role="presentation" class="shell" width="960">
+<tr><td class="header" style="background:#0079C8">
+<table role="presentation" width="100%"><tr><td><div class="eyebrow">BUPA · OPERATIONS MONITORING</div><h1>Customer Complaint Journey</h1><div class="header-caption">DAILY REPORT DASHBOARD</div></td><td align="right" class="header-status">{{environment}}<br><span>{{health}}</span></td></tr></table>
+<p class="period">{{window.label}}</p><div class="brand-note">Bupa text placeholder · No approved logo supplied</div>
+{{#if sample}}<p class="sample">SAMPLE DATA — NOT A PRODUCTION REPORT</p>{{/if}}
+</td></tr>
+<tr><td class="dashboard">
+<table role="presentation" class="metrics" width="100%"><tr>
+<td class="metric-slot" width="25%"><table role="presentation" class="card" width="100%"><tr><td class="metric"><div class="label">TOTAL REQUESTS</div><strong>{{total}}</strong><div class="hint">Gateway volume</div></td></tr></table></td>
+<td class="metric-slot" width="25%"><table role="presentation" class="card" width="100%"><tr><td class="metric success"><div class="label">GATEWAY SUCCESS</div><strong>{{success}}</strong><div class="hint">HTTP 2xx responses</div></td></tr></table></td>
+<td class="metric-slot" width="25%"><table role="presentation" class="card" width="100%"><tr><td class="metric error"><div class="label">GATEWAY FAILURES</div><strong>{{failed}}</strong><div class="hint">Non-2xx / unknown status</div></td></tr></table></td>
+<td class="metric-slot" width="25%"><table role="presentation" class="card" width="100%"><tr><td class="metric warning"><div class="label">BUSINESS ERRORS</div><strong>{{businessErrorCount}}</strong><div class="hint">Observed processing errors</div></td></tr></table></td>
+</tr></table>
+<table role="presentation" class="rate-strip" width="100%"><tr><td class="rate"><div class="label">GATEWAY SUCCESS RATE</div><strong class="success">{{successRate}}%</strong><span> &nbsp; Failure rate: {{failureRate}}%</span></td><td class="status"><strong>{{health}}</strong><div class="hint">Distinct affected events: {{affectedEvents}}</div></td></tr></table>
+<table role="presentation" class="panels" width="100%"><tr>
+<td width="60%" valign="top" class="left-panel"><table role="presentation" class="card" width="100%"><tr><td class="panel-heading"><h2>API Performance</h2><div class="hint">Gateway requests by operation</div></td></tr><tr><td class="panel-body"><table class="data" width="100%"><thead><tr><th>Operation</th><th>Total</th><th>Success</th><th>Failed</th></tr></thead><tbody>{{#each operations}}<tr><td>{{name}}</td><td>{{total}}</td><td class="success">{{success}}</td><td class="error">{{failed}}</td></tr>{{/each}}</tbody></table></td></tr></table></td>
+<td width="40%" valign="top" class="right-panel"><table role="presentation" class="card" width="100%"><tr><td class="panel-heading"><h2>Technical Failures</h2><div class="hint">Observed gateway failure categories</div></td></tr><tr><td class="panel-body"><table class="data" width="100%"><thead><tr><th>Status</th><th>Classification</th><th>Count</th></tr></thead><tbody>{{#each technicalGroups}}<tr><td>{{status}}</td><td>{{technicalReason}}</td><td class="error">{{count}}</td></tr>{{else}}<tr><td colspan="3" class="empty">No gateway failures observed.</td></tr>{{/each}}</tbody></table></td></tr></table></td>
+</tr></table>
+<table role="presentation" class="card business-panel" width="100%"><tr><td class="panel-heading"><h2>Business Processing Errors</h2><div class="hint">Validation and processing failures · Separate from gateway success</div></td></tr><tr><td class="panel-body"><table class="data" width="100%"><thead><tr><th>Operation</th><th>Code</th><th>Reason</th><th>Count</th></tr></thead><tbody>{{#each businessGroups}}<tr><td>{{operation}}</td><td>{{errorCode}}</td><td>{{errorMessage}}</td><td class="warning">{{count}}</td></tr>{{else}}<tr><td colspan="4" class="empty">No observed business errors. Missing payloads remain unverified.</td></tr>{{/each}}</tbody></table></td></tr></table>
+<table role="presentation" class="observations" width="100%"><tr><td><h2>Key Observations</h2>{{#each observations}}<p class="observation">&#8226; {{this}}</p>{{/each}}<p class="attachment">Attachment: {{attachmentName}}</p></td></tr></table>
+</td></tr>
+<tr><td class="footer">Complaint Support Monitoring · Automated report · Internal Use Only<br>Gateway statistics and business validation are separate dimensions.</td></tr>
+</table></td></tr></table>
+</body></html>
